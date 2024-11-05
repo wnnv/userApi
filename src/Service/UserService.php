@@ -16,13 +16,10 @@ class UserService {
     }
 
     public function createUser(array $userData): User {
-        // Создаем объект User из входных данных
         $user = new User(null, $userData['full_name'], $userData['role'], $userData['efficiency']);
 
-        // Валидация данных пользователя
         $this->validateUserData($user);
 
-        // Выполнение запроса на создание пользователя в БД
         $stmt = $this->pdo->prepare("INSERT INTO users (full_name, role, efficiency) VALUES (:full_name, :role, :efficiency)");
         $stmt->execute([
             'full_name' => $user->getFullName(),
@@ -30,7 +27,6 @@ class UserService {
             'efficiency' => $user->getEfficiency()
         ]);
 
-        // Устанавливаем ID вновь созданного пользователя
         $user->setId((int)$this->pdo->lastInsertId());
         return $user;
     }
@@ -44,7 +40,6 @@ class UserService {
             throw new UserNotFoundException("Пользователь с id $id не найден.");
         }
 
-        // Создаем объект User из полученных данных
         return new User(
             (int)$userData['id'],
             $userData['full_name'],
@@ -75,7 +70,6 @@ class UserService {
         $stmt = $this->pdo->prepare($query);
         $stmt->execute($params);
 
-        // Преобразуем результат в массив объектов User
         $users = [];
         while ($userData = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $users[] = new User(
@@ -103,10 +97,8 @@ class UserService {
             $user->setEfficiency((int)$userData['efficiency']);
         }
 
-        // Валидация данных пользователя
         $this->validateUserData($user);
 
-        // Выполнение запроса на обновление
         $stmt = $this->pdo->prepare("UPDATE users SET full_name = :full_name, role = :role, efficiency = :efficiency WHERE id = :id");
         $stmt->execute([
             'full_name' => $user->getFullName(),
@@ -132,7 +124,6 @@ class UserService {
     }
 
     private function validateUserData(User $user): void {
-        // Выполняем базовую проверку данных, используя методы модели User
         if (strlen($user->getFullName()) > 255) {
             throw new InvalidArgumentException("Full name is too long.");
         }
